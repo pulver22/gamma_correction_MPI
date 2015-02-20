@@ -14,10 +14,10 @@ CPP_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-%.o: ../%.cpp
+main.o: ../main.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I/usr/include/mpich -I/usr/include -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	mpiCC -I/usr/include/mpi -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"main.d" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
