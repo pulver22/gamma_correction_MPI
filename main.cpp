@@ -64,17 +64,18 @@ int Read_File_PGM(string filename, int argc, char *argv[])
     f << numrows << " " << numcols << endl;
     f << "255" << endl;
 
+    //Following lines: fill the img matrix
+       for(row = 0; row < num_line; ++row){
+       	std::getline(ss , inputLine);
+       	img[row] = inputLine;
+       }
 
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 
-    //Following lines: fill the img matrix
-    for(row = 0; row < num_line; ++row){
-    	std::getline(ss , inputLine);
-    	img[row] = inputLine;
-    }
+
 
 
     // Modify the gamma
