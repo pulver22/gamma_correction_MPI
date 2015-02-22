@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <istream>
+#include <stdlib.h>
 #include <sstream>
 #include <math.h>
 #include <algorithm>
@@ -13,8 +14,7 @@ using namespace std;
 int Read_File_PGM(string filename, int argc, char *argv[])
 {
     int row = 0, col = 0;
-    int rank;
-    int numTask = 0, sendCount, recvCount, source;
+    int rank,dim,size;
     std::stringstream ss;
     ifstream infile(filename.c_str(), ios::binary);
     ifstream infile2(filename.c_str(), ios::binary);
@@ -28,10 +28,10 @@ int Read_File_PGM(string filename, int argc, char *argv[])
     for (num_line = 0; getline(infile2, line); ++num_line)
         ;
 
-    //create a matrix containing the same number of line of the image and a matrix to store the value send by other process
+
+    //create a matrix containing the same number of line of the image
     string img[num_line];
-    string recvBuf[num_line / 4];
-    string partialResult[num_line/4];
+
 
     for (int i=0; i < 4; ++i){
     	getline(infile,inputLine);
@@ -45,7 +45,7 @@ int Read_File_PGM(string filename, int argc, char *argv[])
     }
 
 
-
+    // Get a pointer to the source image file
     ss << infile.rdbuf();
 
     //Following lines: fill the img matrix
@@ -56,23 +56,34 @@ int Read_File_PGM(string filename, int argc, char *argv[])
 
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numTask);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    if (numTask == 4 ){
-    	int source = 0;
-    	int sendCount = 4;
-    	int recvCount = 4;
 
-    	MPI_Scatter(img, sendCount,MPI_INT,recvBuf, recvCount,MPI_INT, source,MPI_COMM_WORLD);
+    if ((num_line % size) == 0 ){
+    	dim =  num_line / size;
+    } else {
+    	dim = (num_line / size) + 1;
+    }
+    string recvBuf[dim];
+    string partialResult[dim];
 
-    	for (row = 0; row < num_line/4; ++row){
-    		int lenght = recvBuf[row].length();
-    		int num, temp = 0;
-    		char space = ' ';
-    		double gamma = 2.2;
-    		std::stringstream ss;
+    int source = 0;
+    int sendCount = 4;
+    int recvCount = 4;
+    ofstream prova("prova.pgm");
+
+    MPI_Scatter(img, sendCount,MPI_INT,recvBuf, recvCount,MPI_INT, source,MPI_COMM_WORLD);
+
+    for (row = 0; row < dim ; ++row){
+    	int lenght = recvBuf[row].length();
+    	int num, temp = 0;
+    	char space = ' ';
+    	double gamma = 2.2;
+    	std::stringstream ss;
+
+    	if(!recvBuf[row].empty()){
+
     		for (col = 0; col < lenght; ++col){
-
 
     			//until you read a number, put it in temp; when you read a space write temp in out and then the space
     			if(recvBuf[row].at(col) != space){
@@ -87,17 +98,13 @@ int Read_File_PGM(string filename, int argc, char *argv[])
     					ss << corrected << ' ';
     					temp = 0;
     				}
-
-
     			}
     		}
-    		getline(ss,partialResult[row]);
-    		cout << "rank= " << rank << " : " <<  ss << endl ;
+    		cout << "rank= " << rank << " : " << recvBuf[row]  << " " << row << " " << num_line << endl ;
     	}
 
-    }else  {
-    	printf("Error, you must specify 4 tasks\n");
     }
+
 
 
     /*
