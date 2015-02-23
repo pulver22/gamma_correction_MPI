@@ -64,15 +64,16 @@ int Read_File_PGM(string filename, int argc, char *argv[])
     } else {
     	dim = (num_line / size) + 1;
     }
+
     string recvBuf[dim];
     string partialResult[dim];
-
     int source = 0;
-    int sendCount = 4;
-    int recvCount = 4;
+    int sendCount = size;
+    int recvCount = size;
     ofstream prova("prova.pgm");
 
     MPI_Scatter(img, sendCount,MPI_INT,recvBuf, recvCount,MPI_INT, source,MPI_COMM_WORLD);
+
 
     for (row = 0; row < dim ; ++row){
     	int lenght = recvBuf[row].length();
@@ -80,9 +81,9 @@ int Read_File_PGM(string filename, int argc, char *argv[])
     	char space = ' ';
     	double gamma = 2.2;
     	std::stringstream ss;
-
-    	if(!recvBuf[row].empty()){
-
+    	cout << recvBuf[row] << endl;
+    	/*
+    	do{
     		for (col = 0; col < lenght; ++col){
 
     			//until you read a number, put it in temp; when you read a space write temp in out and then the space
@@ -100,9 +101,13 @@ int Read_File_PGM(string filename, int argc, char *argv[])
     				}
     			}
     		}
-    		cout << "rank= " << rank << " : " << recvBuf[row]  << " " << row << " " << num_line << endl ;
-    	}
 
+
+    		//getline(ss,partialResult[row]);
+    		//cout << "rank= " << rank << " : " << partialResult[row]  << " " << row << " " << num_line << endl ;
+    	}while ( !recvBuf[row].empty());
+
+		*/
     }
 
 
